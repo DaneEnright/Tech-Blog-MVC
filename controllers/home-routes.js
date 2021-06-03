@@ -1,36 +1,51 @@
-const router = require('express').Router();
-const {} = require("../models");
+const router = require("express").Router();
+const { Post, Comments } = require("../models");
 
-router.get('/', async (req, res) => {
-    try {
-        const blogData = await Blog.findAll({
-            // include: [
-            //     {
+router.get("/", async (req, res) => {
+  try {
+    const postData = await Post.findAll({
+      include: [
+        {
+          model: Comments,
+        },
+      ],
+    });
 
-            //     }
-            // ]
-        });
-
-        const blogs = blogData.map(() =>
-        blogs.get({ plain: true})
-        );
-        res.render('homepage', {
-            blogs,
-            loggedIn: req.session.loggedIn,
-        });
-    } catch (err) {
-        console.log(err)
-        res.status(500).json(err);
-    }
+    const posts = postData.map((post) => post.get({ plain: true }));
+    res.render("login", {
+      posts,
+      loggedIn: req.session.loggedIn,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
 });
 
-router.get('/blog/:id' async (req,res) => {
-    try { await
+router.get("/post/:id", async (req, res) => {
+  try {
+    const postData = await Post.findByPK(req.params.id, {
+      include: [
+        {
+          model: Comments,
+        },
+      ],
+    });
 
-    } catch (err) {
-        console.log(err);
-        res.status(500).json(err);
-    }
-})
+    const posts = postData.get({ plain: true });
+    res.render("createpost", { posts, loggedIn: req.session.loggedIn });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
+
+router.get("/login", (req, res) => {
+  if (req.session.loggedIn) {
+    res.redirect("/");
+    return;
+  }
+  res.render("login");
+});
 
 module.exports = router;
